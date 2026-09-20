@@ -1,8 +1,4 @@
 class Array:
-    """
-    Array dengan kapasitas dinamis (mirip cara kerja list/vector di balik layar).
-    Saat penuh, kapasitas digandakan (2x) dan seluruh isi disalin manual.
-    """
  
     def __init__(self, capacity=4):
         if capacity < 1:

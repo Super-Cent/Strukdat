@@ -1,28 +1,4 @@
-"""
-M2: Antrean dan Undo - AntreanMelingkar (Circular Queue) + Stack
-Proyek 2EZ4U APP - Struktur Data & Analisa Algoritma (EC234303)
-
-Alur pengerjaan M2 (semua step di bawah ini sudah dikerjakan):
-1. Kerangka AntreanMelingkar (circular queue)
-2. Implementasi enqueue dan dequeue
-3. Kerangka Stack untuk histori aksi
-4. Hubungkan setiap aksi pesanan (dari M1) ke pencatatan histori
-5. Implementasi logika Undo (kebalikan dari aksi terakhir)
-6. Test wrap-around pada circular queue (lihat blok __main__)
-7. (frontend/ui.py) sambungan ke UI Tkinter
-
-CATATAN: tidak menggunakan instant function (dict, set, sorted, .sort(),
-heapq, bisect, collections.*, literal {}, comprehension dict/set).
-"""
-
-
 class AntreanMelingkar:
-    """
-    Antrean (queue) FIFO dengan buffer melingkar (circular buffer).
-    Slot yang sudah di-dequeue otomatis bisa dipakai ulang tanpa geser data,
-    sehingga enqueue dan dequeue sama-sama O(1) - beda dengan Array biasa
-    di M1 yang harus geser semua elemen kalau menghapus dari depan.
-    """
 
     def __init__(self, capacity=8):
         if capacity < 1:
@@ -34,11 +10,6 @@ class AntreanMelingkar:
         self.count = 0   # jumlah elemen yang sedang ada di antrean
 
     def _resize(self, new_capacity):
-        """
-        Alokasi buffer baru, salin isi lama MULAI DARI head supaya urutan
-        FIFO tetap benar (posisi head/tail lama di buffer lama sudah
-        tidak relevan di buffer baru).
-        """
         new_data = [None] * new_capacity
         i = 0
         idx = self.head
@@ -52,7 +23,6 @@ class AntreanMelingkar:
         self.tail = self.count
 
     def enqueue(self, v):
-        """Tambah elemen ke paling belakang antrean. O(1) amortized."""
         if self.count == self.capacity:
             self._resize(self.capacity * 2)
         self.data[self.tail] = v
@@ -60,7 +30,6 @@ class AntreanMelingkar:
         self.count += 1
 
     def dequeue(self):
-        """Ambil & keluarkan elemen paling depan antrean (FIFO). O(1)."""
         if self.count == 0:
             raise IndexError("antrean kosong, tidak ada yang bisa di-dequeue")
         v = self.data[self.head]
@@ -70,7 +39,6 @@ class AntreanMelingkar:
         return v
 
     def peek(self):
-        """Lihat elemen paling depan tanpa mengeluarkannya dari antrean."""
         if self.count == 0:
             raise IndexError("antrean kosong")
         return self.data[self.head]
@@ -83,10 +51,6 @@ class AntreanMelingkar:
 
 
 class Stack:
-    """
-    Tumpukan (stack) LIFO sederhana berbasis array dinamis.
-    Dipakai untuk mencatat histori aksi supaya bisa di-undo.
-    """
 
     def __init__(self, capacity=8):
         if capacity < 1:
@@ -105,14 +69,12 @@ class Stack:
         self.capacity = new_capacity
 
     def push(self, v):
-        """Taruh elemen di puncak tumpukan. O(1) amortized."""
         if self.size == self.capacity:
             self._resize(self.capacity * 2)
         self.data[self.size] = v
         self.size += 1
 
     def pop(self):
-        """Ambil & keluarkan elemen paling atas tumpukan (LIFO). O(1)."""
         if self.size == 0:
             raise IndexError("stack kosong, tidak ada yang bisa di-pop")
         self.size -= 1
@@ -121,7 +83,6 @@ class Stack:
         return v
 
     def peek(self):
-        """Lihat elemen paling atas tanpa mengeluarkannya."""
         if self.size == 0:
             raise IndexError("stack kosong")
         return self.data[self.size - 1]
@@ -134,18 +95,7 @@ class Stack:
 
 
 class AksiHistori:
-    """
-    Satu entri histori aksi. Disimpan di Stack supaya ManajerUndo tahu
-    bagaimana cara membalikkan sebuah aksi yang pernah dilakukan di M1.
-
-    tipe     : "TAMBAH_REGULER" / "TAMBAH_PRIORITAS" / "TAMBAH_VIP" / "HAPUS"
-    index    : posisi tempat aksi terjadi
-               - untuk TAMBAH_* -> posisi tempat elemen baru disisipkan
-               - untuk HAPUS    -> posisi asal elemen sebelum dihapus
-    pesanan  : objek Pesanan yang terlibat (dibutuhkan untuk undo HAPUS,
-               supaya tahu data apa yang harus dikembalikan)
-    """
-
+    
     def __init__(self, tipe, index, pesanan):
         self.tipe = tipe
         self.index = index
@@ -156,14 +106,6 @@ class AksiHistori:
 
 
 class ManajerUndo:
-    """
-    Menghubungkan Stack histori dengan satu struktur data M1
-    (instance Array ATAU LinkList dari m1_pesanan.py) supaya setiap
-    aksi tambah/hapus pesanan bisa dibatalkan (undo).
-
-    Semua aksi pada struktur WAJIB lewat method di sini (bukan panggil
-    struktur.append()/hapus() langsung) supaya histori selalu tercatat.
-    """
 
     def __init__(self, struktur):
         self.struktur = struktur
@@ -192,16 +134,7 @@ class ManajerUndo:
         return not self.histori.is_empty()
 
     def undo(self):
-        """
-        Balikkan aksi PALING TERAKHIR yang tercatat di histori:
-        - aksi terakhir TAMBAH (reguler/prioritas/vip)
-              -> hapus lagi elemen yang barusan ditambahkan itu
-        - aksi terakhir HAPUS
-              -> sisipkan kembali elemen itu persis di posisi semula
 
-        Mengembalikan AksiHistori yang baru saja di-undo (untuk ditampilkan
-        di UI / command log).
-        """
         if self.histori.is_empty():
             raise IndexError("tidak ada aksi untuk di-undo")
 
@@ -216,7 +149,6 @@ class ManajerUndo:
 
 
 def _isi_ke_list(struktur):
-    """Helper hanya untuk keperluan print di test (tanpa comprehension)."""
     hasil = []
     i = 0
     while i < len(struktur):

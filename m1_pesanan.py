@@ -1,9 +1,4 @@
 class Array:
-    """
-    Array dengan kapasitas dinamis (mirip cara kerja list/vector di balik layar).
-    Saat penuh, kapasitas digandakan (2x) dan seluruh isi disalin manual.
-    """
- 
     def __init__(self, capacity=4):
         if capacity < 1:
             capacity = 1
@@ -13,7 +8,6 @@ class Array:
         self.data = [None] * self.capacity
  
     def _resize(self, new_capacity):
-        """Alokasi petak baru berukuran new_capacity, salin isi lama satu-satu."""
         new_data = [None] * new_capacity
         i = 0
         while i < self.size:
@@ -23,17 +17,12 @@ class Array:
         self.capacity = new_capacity
  
     def append(self, v):
-        """
-        Tambah elemen di akhir array.
-        Amortized O(1): mahal (O(n)) hanya saat resize, yang jarang terjadi.
-        """
         if self.size == self.capacity:
             self._resize(self.capacity * 2)
         self.data[self.size] = v
         self.size += 1
  
     def get(self, i):
-        """Lihat pesanan ke-i. O(1) karena alamat memori bisa dihitung langsung."""
         if i < 0 or i >= self.size:
             raise IndexError(
                 "index {} di luar jangkauan (ukuran saat ini: {})".format(i, self.size)
@@ -41,10 +30,6 @@ class Array:
         return self.data[i]
  
     def _insert_at(self, idx, v):
-        """
-        Sisip elemen di posisi idx. O(n) karena elemen dari idx sampai akhir
-        harus digeser satu langkah ke kanan dulu supaya ada slot kosong.
-        """
         if self.size == self.capacity:
             self._resize(self.capacity * 2)
         j = self.size
@@ -55,21 +40,13 @@ class Array:
         self.size += 1
  
     def insert_priority(self, v):
-        """Tambah PRIORITAS: menyerobot ke tengah barisan. O(n) karena geser."""
         idx = self.size // 2
         self._insert_at(idx, v)
  
     def insert_vip(self, v):
-        """Tambah VIP: langsung ke urutan pertama. O(n), paling mahal di Array
-        karena SEMUA elemen yang sudah ada harus digeser ke kanan."""
         self._insert_at(0, v)
  
     def hapus(self, i):
-        """
-        Hapus pesanan ke-i.
-        O(n) karena elemen setelah i harus digeser satu langkah ke kiri
-        untuk menutup lubang bekas elemen yang dihapus.
-        """
         if i < 0 or i >= self.size:
             raise IndexError(
                 "index {} di luar jangkauan (ukuran saat ini: {})".format(i, self.size)
@@ -88,27 +65,18 @@ class Array:
  
  
 class Node:
-    """Satu simpul dalam linked list: menyimpan nilai dan alamat simpul berikutnya."""
- 
     def __init__(self, value):
         self.value = value
         self.next = None
  
  
 class LinkList:
-    """
-    Linked list dengan pointer head dan tail.
-    Pointer tail disimpan supaya append tetap O(1) tanpa perlu menelusuri
-    seluruh list untuk mencari elemen terakhir.
-    """
- 
     def __init__(self):
         self.head = None
         self.tail = None
         self.size = 0
  
     def append(self, v):
-        """Tambah elemen di akhir list. O(1) karena tail sudah diketahui."""
         node = Node(v)
         if self.head is None:
             self.head = node
@@ -119,11 +87,6 @@ class LinkList:
         self.size += 1
  
     def get(self, i):
-        """
-        Lihat pesanan ke-i.
-        O(n) karena harus menelusuri dari head sebanyak i langkah
-        (tidak ada alamat yang bisa dihitung langsung seperti pada array).
-        """
         if i < 0 or i >= self.size:
             raise IndexError(
                 "index {} di luar jangkauan (ukuran saat ini: {})".format(i, self.size)
@@ -136,11 +99,6 @@ class LinkList:
         return current.value
  
     def _insert_at(self, idx, v):
-        """
-        Sisip elemen di posisi idx.
-        O(1) kalau idx == 0 (langsung ubah head, tidak perlu menelusuri apa pun).
-        O(n) untuk idx lain karena tetap harus menelusuri ke posisi idx-1 dulu.
-        """
         node = Node(v)
         if idx == 0:
             node.next = self.head
@@ -160,21 +118,13 @@ class LinkList:
         self.size += 1
  
     def insert_priority(self, v):
-        """Tambah PRIORITAS: menyerobot ke tengah barisan. O(n) karena menelusuri."""
         idx = self.size // 2
         self._insert_at(idx, v)
  
     def insert_vip(self, v):
-        """Tambah VIP: langsung ke urutan pertama. O(1), paling murah di LinkList
-        karena cukup ubah satu pointer (head), tidak ada yang perlu digeser."""
         self._insert_at(0, v)
  
     def hapus(self, i):
-        """
-        Hapus pesanan ke-i.
-        O(n) karena harus menelusuri dulu ke node sebelum posisi i
-        untuk menyambungkan kembali rantainya (kecuali i == 0).
-        """
         if i < 0 or i >= self.size:
             raise IndexError(
                 "index {} di luar jangkauan (ukuran saat ini: {})".format(i, self.size)
@@ -202,7 +152,6 @@ class LinkList:
  
  
 def _isi_ke_list(struktur):
-    """Helper hanya untuk keperluan print di test (tanpa comprehension)."""
     hasil = []
     i = 0
     while i < len(struktur):

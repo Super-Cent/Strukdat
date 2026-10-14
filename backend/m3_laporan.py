@@ -1,5 +1,14 @@
-def insertion_sort(larik, kunci):
+"""
+M3: Laporan Terurut - Insertion Sort, Merge Sort, Binary Search, & Linear Search
+Proyek 2EZ4U APP - Struktur Data & Analisa Algoritma (EC234303)
 
+CATATAN: Tidak menggunakan instant function (dict, set, sorted, .sort(),
+heapq, bisect, collections.*, literal {}, comprehension dict/set).
+"""
+
+
+def insertion_sort(larik, kunci):
+    """Urutkan larik (list of Pesanan) menurut atribut `kunci`, menaik (ascending), IN-PLACE. O(n^2)."""
     i = 1
     while i < len(larik):
         current = larik[i]
@@ -10,23 +19,56 @@ def insertion_sort(larik, kunci):
             larik[j + 1] = larik[j]
             j -= 1
         larik[j + 1] = current
-
         i += 1
     return larik
 
 
-def binary_search(larik_terurut, kunci, nilai_target):
+def merge_sort(larik, kunci):
+    """Urutkan larik (list of Pesanan) menurut atribut `kunci` dengan Merge Sort. O(n log n)."""
+    if len(larik) <= 1:
+        return larik
 
+    mid = len(larik) // 2
+    kiri = merge_sort(larik[:mid], kunci)
+    kanan = merge_sort(larik[mid:], kunci)
+
+    hasil = []
+    i = j = 0
+
+    while i < len(kiri) and j < len(kanan):
+        if getattr(kiri[i], kunci) <= getattr(kanan[j], kunci):
+            hasil.append(kiri[i])
+            i += 1
+        else:
+            hasil.append(kanan[j])
+            j += 1
+
+    while i < len(kiri):
+        hasil.append(kiri[i])
+        i += 1
+
+    while j < len(kanan):
+        hasil.append(kanan[j])
+        j += 1
+
+    return hasil
+
+
+def binary_search_oid(larik_terurut, target_oid):
+    """
+    Cari index elemen berdasarkan `oid` di larik yang SUDAH TERURUT menaik berdasarkan `oid`.
+    Kompleksitas: O(log n).
+    """
     lo = 0
     hi = len(larik_terurut) - 1
 
     while lo <= hi:
         mid = (lo + hi) // 2
-        nilai_mid = getattr(larik_terurut[mid], kunci)
+        oid_mid = getattr(larik_terurut[mid], 'oid')
 
-        if nilai_mid == nilai_target:
+        if oid_mid == target_oid:
             return mid
-        elif nilai_mid < nilai_target:
+        elif oid_mid < target_oid:
             lo = mid + 1
         else:
             hi = mid - 1
@@ -34,7 +76,22 @@ def binary_search(larik_terurut, kunci, nilai_target):
     return -1
 
 
+def linear_search_oid(larik, target_oid):
+    """
+    Cari index elemen berdasarkan `oid` menggunakan Linear Search (bisa untuk larik acak/belum terurut).
+    Kompleksitas: O(n).
+    """
+    i = 0
+    n = len(larik)
+    while i < n:
+        if getattr(larik[i], 'oid') == target_oid:
+            return i
+        i += 1
+    return -1
+
+
 def ambil_subset(struktur, filter_resto=None, filter_status=None, maks_baris=None):
+    """Filter data M1 ke dalam list Python biasa sebelum di-sort."""
     hasil = []
     n = len(struktur)
     i = 0
@@ -56,14 +113,22 @@ def ambil_subset(struktur, filter_resto=None, filter_status=None, maks_baris=Non
     return hasil
 
 
-def buat_laporan(struktur, kunci, filter_resto=None, filter_status=None, maks_baris=1000):
+def buat_laporan(struktur, kunci, filter_resto=None, filter_status=None, maks_baris=1000, metode_sort="insertion"):
+    """Gabungkan filter subset + pengurutan (insertion / merge)."""
     subset = ambil_subset(struktur, filter_resto, filter_status, maks_baris)
-    insertion_sort(subset, kunci)
-    return subset
+    if metode_sort == "merge":
+        return merge_sort(subset, kunci)
+    else:
+        insertion_sort(subset, kunci)
+        return subset
 
 
-def cari_di_laporan(laporan_terurut, kunci, nilai_target):
-    return binary_search(laporan_terurut, kunci, nilai_target)
+def cari_di_laporan_oid(laporan, target_oid, metode_search="binary"):
+    """Pencarian spesifik berdasarkan oid pada laporan (binary / linear)."""
+    if metode_search == "binary":
+        return binary_search_oid(laporan, target_oid)
+    else:
+        return linear_search_oid(laporan, target_oid)
 
 
 if __name__ == "__main__":
@@ -79,29 +144,14 @@ if __name__ == "__main__":
     arr, ll, jumlah = load_pesanan_csv(path_csv)
     print("Selesai load {} baris.\n".format(jumlah))
 
-    print("=== Buat laporan: resto=kafe-teknik, urutkan berdasarkan harga ===")
+    print("=== Uji Buat Laporan Terurut oid (Merge Sort 1000 baris) ===")
     t0 = time.perf_counter()
-    laporan = buat_laporan(arr, kunci="harga", filter_resto="kafe-teknik", maks_baris=1000)
+    laporan_oid = buat_laporan(arr, kunci="oid", maks_baris=1000, metode_sort="merge")
     t1 = time.perf_counter()
-    print("Subset diambil & diurutkan: {} baris dalam {:.2f} ms".format(len(laporan), (t1 - t0) * 1000))
+    print("Merge Sort (oid) selesai dalam {:.2f} ms".format((t1 - t0) * 1000))
 
-    print("\n10 pesanan termurah di kafe-teknik (dari subset 1000 baris):")
-    i = 0
-    while i < 10 and i < len(laporan):
-        print(" -", laporan[i])
-        i += 1
-
-    print("\n=== Cari pesanan dengan harga 15000 di laporan ===")
+    print("\n=== Uji Pencarian oid = 'O-000001' ===")
     t0 = time.perf_counter()
-    idx = cari_di_laporan(laporan, kunci="harga", nilai_target=15000)
+    idx = cari_di_laporan_oid(laporan_oid, "O-000001", metode_search="binary")
     t1 = time.perf_counter()
-    if idx == -1:
-        print("Tidak ditemukan pesanan dengan harga 15000 (waktu cari: {:.4f} ms)".format((t1 - t0) * 1000))
-    else:
-        print("Ditemukan di index", idx, ":", laporan[idx], "(waktu cari: {:.4f} ms)".format((t1 - t0) * 1000))
-
-    print("\n=== Perbandingan: insertion sort pada subset lebih besar (5000 baris, semua resto) ===")
-    t0 = time.perf_counter()
-    laporan_besar = buat_laporan(arr, kunci="t_masuk_detik", maks_baris=5000)
-    t1 = time.perf_counter()
-    print("5000 baris diurutkan dalam {:.2f} ms (lihat bedanya kalau maks_baris makin besar -> O(n^2))".format((t1 - t0) * 1000))
+    print("Binary Search: Index {} (waktu: {:.4f} ms)".format(idx, (t1 - t0) * 1000))

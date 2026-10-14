@@ -1,295 +1,295 @@
-import time
+"""
+M2: Stack & Queue
+Proyek 2EZ4U APP - Struktur Data & Analisa Algoritma (EC234303)
+"""
+
+class Stack:
+    def __init__(self):
+        self.data = []
+
+    def push(self, x):
+        self.data.append(x)
+
+    def pop(self):
+        if self.is_empty():
+            raise IndexError("Stack kosong")
+        return self.data.pop()
+
+    def peek(self):
+        if self.is_empty():
+            return None
+        return self.data[-1]
+
+    def is_empty(self):
+        return len(self.data) == 0
+
+    def clear(self):
+        self.data = []
+
+    def __len__(self):
+        return len(self.data)
+
+
+# ==========================================
+# 1. POSTFIX & KASIR (STACK OPERATOR & ANGKA)
+# ==========================================
+def presedensi(op):
+    if op in ('+', '-'):
+        return 1
+    if op in ('*', '/'):
+        return 2
+    return 0
+
+def ke_postfix(ekspresi):
+    tokens = ekspresi.split()
+    output = []
+    s = Stack()
+
+    for token in tokens:
+        if token.isdigit():
+            output.append(token)
+        elif token in ('+', '-', '*', '/'):
+            while (not s.is_empty()) and presedensi(s.peek()) >= presedensi(token):
+                output.append(s.pop())
+            s.push(token)
+        elif token == '(':
+            s.push(token)
+        elif token == ')':
+            while (not s.is_empty()) and s.peek() != '(':
+                output.append(s.pop())
+            if not s.is_empty() and s.peek() == '(':
+                s.pop()
+
+    while not s.is_empty():
+        output.append(s.pop())
+
+    return " ".join(output)
+
+def hitung(postfix_expr):
+    tokens = postfix_expr.split()
+    s = Stack()
+
+    for token in tokens:
+        if token.isdigit():
+            s.push(int(token))
+        elif token in ('+', '-', '*', '/'):
+            b = s.pop()
+            a = s.pop()
+            if token == '+':
+                res = a + b
+            elif token == '-':
+                res = a - b
+            elif token == '*':
+                res = a * b
+            elif token == '/':
+                res = a // b if b != 0 else 0
+            s.push(res)
+
+    return s.pop() if not s.is_empty() else 0
+
+
+# ==========================================
+# 2. QUEUE DEQUEUE NAIF VS MELINGKAR
+# ==========================================
+class AntreanNaif:
+    def __init__(self):
+        self.data = []
+
+    def enqueue(self, x):
+        self.data.append(x)
+
+    def dequeue(self):
+        """Metode dequeue tunggal O(n)."""
+        if len(self.data) == 0:
+            raise IndexError("Antrean kosong")
+        return self.data.pop(0)
+
+    def dequeue_banyak(self, k=1):
+        """Dequeue k elemen sekaligus dan hitung total pergeseran memori."""
+        if len(self.data) < k:
+            k = len(self.data)
+        if k == 0:
+            return [], 0
+
+        terkeluar = []
+        total_digeser = 0
+
+        for _ in range(k):
+            item = self.data.pop(0)
+            terkeluar.append(item)
+            total_digeser += len(self.data)
+
+        return terkeluar, total_digeser
+
+    def __len__(self):
+        return len(self.data)
 
 
 class AntreanMelingkar:
-
-    def __init__(self, capacity=8):
-        if capacity < 1:
-            capacity = 1
-        self.capacity = capacity
-        self.data = [None] * self.capacity
-        self.head = 0    # index elemen paling depan (keluar duluan)
-        self.tail = 0    # index slot kosong berikutnya untuk enqueue
-        self.count = 0   # jumlah elemen yang sedang ada di antrean
-
-    def _resize(self, new_capacity):
-        new_data = [None] * new_capacity
-        i = 0
-        idx = self.head
-        while i < self.count:
-            new_data[i] = self.data[idx]
-            idx = (idx + 1) % self.capacity
-            i += 1
-        self.data = new_data
-        self.capacity = new_capacity
+    def __init__(self, kapasitas=200000):
+        self.kapasitas = kapasitas
+        self.data = [None] * kapasitas
         self.head = 0
-        self.tail = self.count
-
-    def enqueue(self, v):
-        if self.count == self.capacity:
-            self._resize(self.capacity * 2)
-        self.data[self.tail] = v
-        self.tail = (self.tail + 1) % self.capacity
-        self.count += 1
-
-    def dequeue(self):
-        if self.count == 0:
-            raise IndexError("antrean kosong, tidak ada yang bisa di-dequeue")
-        v = self.data[self.head]
-        self.data[self.head] = None  # bersihkan slot biar tidak "nyangkut"
-        self.head = (self.head + 1) % self.capacity
-        self.count -= 1
-        return v
-
-    def peek(self):
-        if self.count == 0:
-            raise IndexError("antrean kosong")
-        return self.data[self.head]
-
-    def is_empty(self):
-        return self.count == 0
-
-    def __len__(self):
-        return self.count
-
-
-class Stack:
-
-    def __init__(self, capacity=8):
-        if capacity < 1:
-            capacity = 1
-        self.capacity = capacity
-        self.data = [None] * self.capacity
+        self.tail = 0
         self.size = 0
 
-    def _resize(self, new_capacity):
-        new_data = [None] * new_capacity
-        i = 0
-        while i < self.size:
-            new_data[i] = self.data[i]
-            i += 1
-        self.data = new_data
-        self.capacity = new_capacity
+    def enqueue(self, x):
+        if self.size == self.kapasitas:
+            baru = [None] * (self.kapasitas * 2)
+            for i in range(self.size):
+                baru[i] = self.data[(self.head + i) % self.kapasitas]
+            self.data = baru
+            self.head = 0
+            self.tail = self.size
+            self.kapasitas *= 2
 
-    def push(self, v):
-        if self.size == self.capacity:
-            self._resize(self.capacity * 2)
-        self.data[self.size] = v
+        self.data[self.tail] = x
+        self.tail = (self.tail + 1) % self.kapasitas
         self.size += 1
 
-    def pop(self):
+    def dequeue(self):
+        """Metode dequeue tunggal O(1)."""
         if self.size == 0:
-            raise IndexError("stack kosong, tidak ada yang bisa di-pop")
+            raise IndexError("Antrean kosong")
+        item = self.data[self.head]
+        self.data[self.head] = None
+        self.head = (self.head + 1) % self.kapasitas
         self.size -= 1
-        v = self.data[self.size]
-        self.data[self.size] = None
-        return v
+        return item
 
-    def peek(self):
-        if self.size == 0:
-            raise IndexError("stack kosong")
-        return self.data[self.size - 1]
+    def dequeue_banyak(self, k=1):
+        """Dequeue k elemen. Pergeseran elemen selalu 0."""
+        if self.size < k:
+            k = self.size
+        if k == 0:
+            return [], 0
 
-    def is_empty(self):
-        return self.size == 0
+        terkeluar = []
+        for _ in range(k):
+            item = self.data[self.head]
+            self.data[self.head] = None
+            self.head = (self.head + 1) % self.kapasitas
+            self.size -= 1
+            terkeluar.append(item)
+
+        return terkeluar, 0
+
+    def kembalikan_ke_depan(self, list_item):
+        for item in reversed(list_item):
+            self.head = (self.head - 1 + self.kapasitas) % self.kapasitas
+            self.data[self.head] = item
+            self.size += 1
 
     def __len__(self):
         return self.size
 
 
+# ==========================================
+# 3. MANAJER DENGAN UNDO & REDO
+# ==========================================
 class AksiHistori:
-
-    def __init__(self, tipe, index, pesanan):
-        self.tipe = tipe
+    def __init__(self, jenis, data, index=None):
+        self.jenis = jenis
+        self.data = data
         self.index = index
-        self.pesanan = pesanan
 
     def __repr__(self):
-        return "AksiHistori({}, index={}, {})".format(self.tipe, self.index, self.pesanan)
-
-
-class ManajerUndo:
-
-    def __init__(self, struktur):
-        self.struktur = struktur
-        self.histori = Stack()
-
-    def tambah_reguler(self, pesanan):
-        self.struktur.append(pesanan)
-        idx = len(self.struktur) - 1
-        self.histori.push(AksiHistori("TAMBAH_REGULER", idx, pesanan))
-
-    def tambah_prioritas(self, pesanan):
-        idx = len(self.struktur) // 2
-        self.struktur.insert_priority(pesanan)
-        self.histori.push(AksiHistori("TAMBAH_PRIORITAS", idx, pesanan))
-
-    def tambah_vip(self, pesanan):
-        self.struktur.insert_vip(pesanan)
-        self.histori.push(AksiHistori("TAMBAH_VIP", 0, pesanan))
-
-    def hapus(self, index):
-        pesanan = self.struktur.hapus(index)
-        self.histori.push(AksiHistori("HAPUS", index, pesanan))
-        return pesanan
-
-    def bisa_undo(self):
-        return not self.histori.is_empty()
-
-    def undo(self):
-
-        if self.histori.is_empty():
-            raise IndexError("tidak ada aksi untuk di-undo")
-
-        aksi = self.histori.pop()
-
-        if aksi.tipe == "TAMBAH_REGULER" or aksi.tipe == "TAMBAH_PRIORITAS" or aksi.tipe == "TAMBAH_VIP":
-            self.struktur.hapus(aksi.index)
-        elif aksi.tipe == "HAPUS":
-            self.struktur.sisip_di(aksi.index, aksi.pesanan)
-
-        return aksi
+        return f"AksiHistori({self.jenis})"
 
 
 class ManajerPesananGabungan:
     def __init__(self, arr, ll):
         self.arr = arr
         self.ll = ll
-        self.histori = Stack()
+        self.stack_undo = Stack()
+        self.stack_redo = Stack()
 
     def tambah_reguler(self, pesanan):
-        t0 = time.perf_counter()
-        self.arr.append(pesanan)
-        t1 = time.perf_counter()
-        self.ll.append(pesanan)
-        t2 = time.perf_counter()
-
-        idx = len(self.arr) - 1
-        self.histori.push(AksiHistori("TAMBAH_REGULER", idx, pesanan))
-        return idx, (t1 - t0) * 1000, (t2 - t1) * 1000
+        idx = self.arr.tambah_reguler(pesanan)
+        self.ll.tambah_reguler(pesanan)
+        self.stack_undo.push(AksiHistori("TAMBAH_REGULER", pesanan, idx))
+        self.stack_redo.clear()
+        return idx
 
     def tambah_prioritas(self, pesanan):
-        idx = len(self.arr) // 2
-
-        t0 = time.perf_counter()
-        self.arr.insert_priority(pesanan)
-        t1 = time.perf_counter()
-        self.ll.insert_priority(pesanan)
-        t2 = time.perf_counter()
-
-        self.histori.push(AksiHistori("TAMBAH_PRIORITAS", idx, pesanan))
-        return idx, (t1 - t0) * 1000, (t2 - t1) * 1000
+        idx = self.arr.tambah_prioritas(pesanan)
+        self.ll.tambah_prioritas(pesanan)
+        self.stack_undo.push(AksiHistori("TAMBAH_PRIORITAS", pesanan, idx))
+        self.stack_redo.clear()
+        return idx
 
     def tambah_vip(self, pesanan):
-        t0 = time.perf_counter()
-        self.arr.insert_vip(pesanan)
-        t1 = time.perf_counter()
-        self.ll.insert_vip(pesanan)
-        t2 = time.perf_counter()
+        idx = self.arr.tambah_vip(pesanan)
+        self.ll.tambah_vip(pesanan)
+        self.stack_undo.push(AksiHistori("TAMBAH_VIP", pesanan, idx))
+        self.stack_redo.clear()
+        return idx
 
-        self.histori.push(AksiHistori("TAMBAH_VIP", 0, pesanan))
-        return 0, (t1 - t0) * 1000, (t2 - t1) * 1000
+    def hapus(self, index):
+        p_arr = self.arr.hapus(index)
+        self.ll.hapus(index)
+        self.stack_undo.push(AksiHistori("HAPUS", p_arr, index))
+        self.stack_redo.clear()
+        return p_arr
 
-    def hapus(self, idx):
-        t0 = time.perf_counter()
-        pesanan = self.arr.hapus(idx)
-        t1 = time.perf_counter()
-        self.ll.hapus(idx)
-        t2 = time.perf_counter()
+    def catat_dequeue(self, list_terkeluar):
+        self.stack_undo.push(AksiHistori("DEQUEUE", list_terkeluar))
+        self.stack_redo.clear()
 
-        self.histori.push(AksiHistori("HAPUS", idx, pesanan))
-        return pesanan, (t1 - t0) * 1000, (t2 - t1) * 1000
+    def undo_last(self, antrean_circular=None):
+        if self.stack_undo.is_empty():
+            raise IndexError("Tumpukan undo kosong, tidak ada aksi untuk dibatalkan")
 
-    def bisa_undo(self):
-        return not self.histori.is_empty()
+        aksi = self.stack_undo.pop()
 
-    def undo(self):
-        """
-        Balikkan aksi terakhir di KEDUA struktur sekaligus, supaya
-        Array dan LinkList tetap sinkron setelah di-undo.
-        """
-        if self.histori.is_empty():
-            raise IndexError("tidak ada aksi untuk di-undo")
-
-        aksi = self.histori.pop()
-
-        if aksi.tipe == "TAMBAH_REGULER" or aksi.tipe == "TAMBAH_PRIORITAS" or aksi.tipe == "TAMBAH_VIP":
+        if aksi.jenis == "DEQUEUE":
+            if antrean_circular is not None:
+                antrean_circular.kembalikan_ke_depan(aksi.data)
+            pesan = f"{len(aksi.data)} pesanan dikembalikan ke DEPAN antrean circular"
+        
+        elif aksi.jenis.startswith("TAMBAH"):
             self.arr.hapus(aksi.index)
             self.ll.hapus(aksi.index)
-        elif aksi.tipe == "HAPUS":
-            self.arr.sisip_di(aksi.index, aksi.pesanan)
-            self.ll.sisip_di(aksi.index, aksi.pesanan)
+            pesan = f"Penambahan pesanan '{getattr(aksi.data, 'oid', '-')}' dibatalkan (dihapus dari M1)"
+        
+        elif aksi.jenis == "HAPUS":
+            self.arr.insert(aksi.index, aksi.data)
+            self.ll.insert(aksi.index, aksi.data)
+            pesan = f"Penghapusan pesanan '{getattr(aksi.data, 'oid', '-')}' dibatalkan (dikembalikan ke M1)"
 
-        return aksi
+        self.stack_redo.push(aksi)
+        return pesan
 
+    def redo_last(self, antrean_circular=None):
+        if self.stack_redo.is_empty():
+            raise IndexError("Tumpukan redo kosong, tidak ada aksi untuk diulang")
 
-def _isi_ke_list(struktur):
-    """Helper hanya untuk keperluan print di test (tanpa comprehension)."""
-    hasil = []
-    i = 0
-    while i < len(struktur):
-        hasil.append(struktur.get(i))
-        i += 1
-    return hasil
+        aksi = self.stack_redo.pop()
 
+        if aksi.jenis == "DEQUEUE":
+            if antrean_circular is not None:
+                antrean_circular.dequeue_banyak(len(aksi.data))
+            pesan = f"{len(aksi.data)} pesanan keluar lagi dari antrean circular"
 
-if __name__ == "__main__":
-    print("=== Test AntreanMelingkar (circular queue) ===")
-    antrean = AntreanMelingkar(capacity=3)  # kapasitas kecil biar wrap-around kelihatan
+        elif aksi.jenis == "TAMBAH_REGULER":
+            self.arr.tambah_reguler(aksi.data)
+            self.ll.tambah_reguler(aksi.data)
+            pesan = f"Mengerjakan ulang penambahan pesanan reguler '{getattr(aksi.data, 'oid', '-')}'"
 
-    antrean.enqueue("O-1")
-    antrean.enqueue("O-2")
-    antrean.enqueue("O-3")
-    print("Setelah enqueue O-1, O-2, O-3 | isi (head->tail):", end=" ")
-    print(antrean.data, "| head=", antrean.head, "tail=", antrean.tail, "count=", antrean.count)
+        elif aksi.jenis == "TAMBAH_PRIORITAS":
+            self.arr.tambah_prioritas(aksi.data)
+            self.ll.tambah_prioritas(aksi.data)
+            pesan = f"Mengerjakan ulang penambahan pesanan prioritas '{getattr(aksi.data, 'oid', '-')}'"
 
-    print("dequeue():", antrean.dequeue())  # keluarkan O-1, slot index-0 kosong lagi
-    print("dequeue():", antrean.dequeue())  # keluarkan O-2
+        elif aksi.jenis == "TAMBAH_VIP":
+            self.arr.tambah_vip(aksi.data)
+            self.ll.tambah_vip(aksi.data)
+            pesan = f"Mengerjakan ulang penambahan pesanan VIP '{getattr(aksi.data, 'oid', '-')}'"
 
-    # enqueue lagi -> harus WRAP AROUND, pakai slot kosong di awal buffer
-    antrean.enqueue("O-4")
-    antrean.enqueue("O-5")
-    print("Setelah dequeue 2x lalu enqueue O-4, O-5 (wrap-around):")
-    print("isi buffer mentah:", antrean.data, "| head=", antrean.head,
-          "tail=", antrean.tail, "count=", antrean.count)
-    print("Urutan FIFO yang benar harus O-3, O-4, O-5:")
-    print("dequeue():", antrean.dequeue())
-    print("dequeue():", antrean.dequeue())
-    print("dequeue():", antrean.dequeue())
+        elif aksi.jenis == "HAPUS":
+            self.arr.hapus(aksi.index)
+            self.ll.hapus(aksi.index)
+            pesan = f"Mengerjakan ulang penghapusan pesanan pada indeks {aksi.index}"
 
-    print()
-    print("=== Test Stack ===")
-    stack = Stack()
-    stack.push("aksi-1")
-    stack.push("aksi-2")
-    stack.push("aksi-3")
-    print("pop():", stack.pop())  # harus "aksi-3" (LIFO)
-    print("pop():", stack.pop())  # harus "aksi-2"
-
-    print()
-    print("=== Test ManajerUndo (terhubung ke Array dari M1) ===")
-    import sys
-    import os
-    sys.path.insert(0, os.path.dirname(__file__))
-    from m1_pesanan import Array, Pesanan  # noqa: E402  (import setelah path diatur)
-
-    arr = Array()
-    manajer = ManajerUndo(arr)
-
-    p1 = Pesanan("O-100", "Budi", "kafe-teknik", "nasi-goreng", 15000, 3, 0, None, "ANTRE")
-    p2 = Pesanan("O-101", "Siti", "kedai-kopi", "kopi-susu", 10000, 2, 0, None, "ANTRE")
-    p3 = Pesanan("O-102", "Rahmi", "kafe-teknik", "roti-bakar", 12000, 1, 0, None, "ANTRE")
-
-    manajer.tambah_reguler(p1)
-    manajer.tambah_prioritas(p2)
-    manajer.tambah_vip(p3)
-    print("Setelah 3x tambah ->", _isi_ke_list(arr))
-
-    manajer.hapus(1)
-    print("Setelah hapus(1)  ->", _isi_ke_list(arr))
-
-    aksi_dibatalkan = manajer.undo()
-    print("Undo terakhir ({}) ->".format(aksi_dibatalkan.tipe), _isi_ke_list(arr))
-
-    aksi_dibatalkan = manajer.undo()
-    print("Undo terakhir ({}) ->".format(aksi_dibatalkan.tipe), _isi_ke_list(arr))
+        self.stack_undo.push(aksi)
+        return pesan

@@ -28,7 +28,6 @@ class Array:
         self.size += 1
 
     def get(self, i):
-        """Lihat pesanan ke-i. O(1) karena alamat memori bisa dihitung langsung."""
         if i < 0 or i >= self.size:
             raise IndexError(
                 "index {} di luar jangkauan (ukuran saat ini: {})".format(i, self.size)
@@ -69,7 +68,7 @@ class Array:
         while j < self.size - 1:
             self.data[j] = self.data[j + 1]
             j += 1
-        self.data[self.size - 1] = None  
+        self.data[self.size - 1] = None  # bersihkan slot terakhir yang jadi duplikat
         self.size -= 1
         return removed
 
@@ -174,6 +173,7 @@ class LinkList:
 
 
 class Pesanan:
+
     __slots__ = (
         "oid", "pelanggan", "resto", "menu", "harga", "prioritas",
         "t_masuk_detik", "t_selesai_detik", "status",
@@ -276,7 +276,6 @@ def benchmark(arr, ll):
 
 
 def cetak_benchmark(hasil):
-    """Cetak hasil benchmark() dalam bentuk tabel sederhana ke layar."""
     print("{:<22} {:<10} {:>14}".format("Operasi", "Struktur", "Waktu (ms)"))
     print("-" * 48)
     i = 0
@@ -336,9 +335,6 @@ if __name__ == "__main__":
     print("hapus(0), yang terhapus:", dihapus)
     print("Setelah hapus(0)        ->", _isi_ke_list(ll))
 
-    # ------------------------------------------------------------------
-    # Step 7-8: load data CSV skala penuh (200.000 baris) & benchmark
-    # ------------------------------------------------------------------
     print()
     print("=== Load data/pesanan.csv & Benchmark skala penuh ===")
     import os

@@ -56,7 +56,6 @@ class App(tk.Tk):
         self.geometry("1000x700")
         self.configure(bg="#f4f4f4")
 
-        # --- state backend ---
         self.arr = None
         self.ll = None
         self.manager = None
@@ -170,7 +169,7 @@ class App(tk.Tk):
         return var
 
     def _cek_data_dimuat(self):
-        if self.arr is None:
+        if self.arr is None or self.ll is None:
             self._tampilkan_hasil("Data belum dimuat. Pilih menu \"DATA - LOAD\" dulu.")
             return False
         return True
@@ -446,8 +445,16 @@ class App(tk.Tk):
         try:
             idx = int(self.entries.get("Index (0 = pertama)", tk.Entry()).get())
             pakai_array = "ARRAY" in self.menu_aktif
+            
+            t0 = time.perf_counter()
             p = self.arr.get(idx) if pakai_array else self.ll.get(idx)
-            self._tampilkan_hasil(repr(p))
+            t1 = time.perf_counter()
+            
+            label_modul = "M1 - array" if pakai_array else "M1 - linkedlist"
+            nama_aksi = "array_lihat" if pakai_array else "linkedlist_lihat"
+            
+            self._tampilkan_hasil(f"[{'ARRAY' if pakai_array else 'LINKEDLIST'}] Indeks {idx}:\n\n" + repr(p))
+            self._log(nama_aksi, label_modul, (t1 - t0) * 1000)
         except Exception as e:
             self._tampilkan_hasil("Error: " + str(e))
 
@@ -455,24 +462,37 @@ class App(tk.Tk):
         if not self._cek_data_dimuat(): return
         try:
             idx = int(self.entries.get("Index (0 = pertama)", tk.Entry()).get())
-            p = self.manager.hapus(idx)
-            self._tampilkan_hasil("Terhapus:\n" + repr(p))
-            self._log("hapus_pesanan", "M1 - array", 0.0)
+            pakai_array = "ARRAY" in self.menu_aktif
+            
+            t0 = time.perf_counter()
+            if pakai_array:
+                p = self.manager.hapus(idx)
+            else:
+                p = self.ll.hapus(idx)
+            t1 = time.perf_counter()
+
+            label_modul = "M1 - array" if pakai_array else "M1 - linkedlist"
+            nama_aksi = "array_hapus" if pakai_array else "linkedlist_hapus"
+
+            self._tampilkan_hasil(f"Terhapus dari {'ARRAY' if pakai_array else 'LINKEDLIST'}:\n\n" + repr(p))
+            self._log(nama_aksi, label_modul, (t1 - t0) * 1000)
         except Exception as e:
             self._tampilkan_hasil("Error: " + str(e))
 
     def _aksi_tambah(self):
         if not self._cek_data_dimuat(): return
         try:
+            pakai_array = "ARRAY" in self.menu_aktif
+            
             if "VIP" in self.menu_aktif:
                 prioritas = 1
-                nama_aksi = "tambah_vip"
+                jenis_str = "vip"
             elif "PRIORITAS" in self.menu_aktif:
                 prioritas = 2
-                nama_aksi = "tambah_prioritas"
+                jenis_str = "prioritas"
             else:
                 prioritas = 3
-                nama_aksi = "tambah_reguler"
+                jenis_str = "reguler"
 
             p = Pesanan(
                 "O-UI-" + str(int(time.time())),
@@ -483,15 +503,28 @@ class App(tk.Tk):
                 prioritas, 0, None, "ANTRE"
             )
 
-            if prioritas == 1:
-                idx = self.manager.tambah_vip(p)
-            elif prioritas == 2:
-                idx = self.manager.tambah_prioritas(p)
+            t0 = time.perf_counter()
+            if pakai_array:
+                if prioritas == 1:
+                    idx = self.manager.tambah_vip(p)
+                elif prioritas == 2:
+                    idx = self.manager.tambah_prioritas(p)
+                else:
+                    idx = self.manager.tambah_reguler(p)
             else:
-                idx = self.manager.tambah_reguler(p)
+                if prioritas == 1:
+                    idx = self.ll.tambah_vip(p)
+                elif prioritas == 2:
+                    idx = self.ll.tambah_prioritas(p)
+                else:
+                    idx = self.ll.tambah_reguler(p)
+            t1 = time.perf_counter()
 
-            self._tampilkan_hasil("Berhasil ditambahkan pada indeks " + str(idx) + " (Prioritas: " + str(prioritas) + "):\n" + repr(p))
-            self._log(nama_aksi, "M1 - array", 0.0)
+            label_modul = "M1 - array" if pakai_array else "M1 - linkedlist"
+            nama_aksi = f"{'array' if pakai_array else 'linkedlist'}_tambah_{jenis_str}"
+
+            self._tampilkan_hasil(f"Berhasil ditambahkan ke {'ARRAY' if pakai_array else 'LINKEDLIST'} pada indeks {idx} (Prioritas: {prioritas}):\n\n" + repr(p))
+            self._log(nama_aksi, label_modul, (t1 - t0) * 1000)
         except Exception as e:
             self._tampilkan_hasil("Error input: " + str(e))
 

@@ -28,6 +28,7 @@ class Array:
         self.size += 1
 
     def get(self, i):
+        """Lihat pesanan ke-i. O(1) karena alamat memori bisa dihitung langsung."""
         if i < 0 or i >= self.size:
             raise IndexError(
                 "index {} di luar jangkauan (ukuran saat ini: {})".format(i, self.size)
@@ -68,7 +69,7 @@ class Array:
         while j < self.size - 1:
             self.data[j] = self.data[j + 1]
             j += 1
-        self.data[self.size - 1] = None  # bersihkan slot terakhir yang jadi duplikat
+        self.data[self.size - 1] = None  
         self.size -= 1
         return removed
 
@@ -77,6 +78,7 @@ class Array:
 
 
 class Node:
+
     def __init__(self, value):
         self.value = value
         self.next = None
@@ -131,7 +133,6 @@ class LinkList:
         self.size += 1
 
     def insert_priority(self, v):
-        """Tambah PRIORITAS: menyerobot ke tengah barisan. O(n) karena menelusuri."""
         idx = self.size // 2
         self._insert_at(idx, v)
 
@@ -173,7 +174,6 @@ class LinkList:
 
 
 class Pesanan:
-
     __slots__ = (
         "oid", "pelanggan", "resto", "menu", "harga", "prioritas",
         "t_masuk_detik", "t_selesai_detik", "status",
@@ -198,7 +198,6 @@ class Pesanan:
 
 
 def load_pesanan_csv(path, limit=None):
-
     arr = Array(capacity=4)
     ll = LinkList()
     jumlah = 0
@@ -277,6 +276,7 @@ def benchmark(arr, ll):
 
 
 def cetak_benchmark(hasil):
+    """Cetak hasil benchmark() dalam bentuk tabel sederhana ke layar."""
     print("{:<22} {:<10} {:>14}".format("Operasi", "Struktur", "Waktu (ms)"))
     print("-" * 48)
     i = 0

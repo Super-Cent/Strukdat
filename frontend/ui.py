@@ -1,13 +1,3 @@
-"""
-frontend/ui.py - Jendela Tkinter untuk Proyek 2EZ4U APP
-Menyambungkan tampilan ke backend M1 (Array/LinkList) dan M2 (Antrean/Undo).
-
-Layout (sesuai contoh di PDF soal):
-- Kiri   : daftar menu
-- Kanan  : form parameter (atas) + hasil (bawah)
-- Bawah  : panel COMMAND, mencatat tiap perintah + modul + waktu eksekusi
-"""
-
 import os
 import sys
 import time

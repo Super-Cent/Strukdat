@@ -1,33 +1,5 @@
-"""
-M3: Laporan Terurut - Insertion Sort + Binary Search
-Proyek 2EZ4U APP - Struktur Data & Analisa Algoritma (EC234303)
-
-Alur pengerjaan M3:
-1. Implementasi insertion sort generik (berdasarkan field apa saja)
-2. Implementasi binary search (hanya valid pada larik yang sudah terurut)
-3. ambil_subset(): filter dulu dari struktur M1 (resto/status/batas baris)
-   sebelum di-sort, karena insertion sort O(n^2) terlalu lambat untuk
-   langsung diterapkan ke 200.000 baris sekaligus
-4. buat_laporan(): gabungkan filter + insertion sort jadi satu alur
-5. cari_di_laporan(): bungkus binary_search supaya gampang dipakai UI
-
-CATATAN: tidak menggunakan instant function (dict, set, sorted, .sort(),
-heapq, bisect, collections.*, literal {}, comprehension dict/set).
-"""
-
-
 def insertion_sort(larik, kunci):
-    """
-    Urutkan larik (list of Pesanan) menurut atribut bernama `kunci`
-    (misal "harga" atau "t_masuk_detik"), menaik (ascending), IN-PLACE.
 
-    Cara kerja: ambil elemen satu-satu dari kiri, geser elemen yang lebih
-    besar ke kanan, sisipkan elemen itu di posisi yang tepat di bagian
-    larik yang sudah terurut (mirip mengurutkan kartu remi di tangan).
-
-    Kompleksitas: O(n^2) di rata-rata/terburuk - makanya HANYA dipakai
-    untuk subset data (lihat ambil_subset), bukan 200.000 baris langsung.
-    """
     i = 1
     while i < len(larik):
         current = larik[i]
@@ -44,17 +16,7 @@ def insertion_sort(larik, kunci):
 
 
 def binary_search(larik_terurut, kunci, nilai_target):
-    """
-    Cari index elemen dengan atribut `kunci` == nilai_target di dalam
-    larik yang SUDAH TERURUT menaik berdasarkan kunci yang sama.
-    Mengembalikan index jika ketemu, atau -1 jika tidak ada.
 
-    Cara kerja: bandingkan nilai_target dengan elemen TENGAH larik,
-    lalu persempit pencarian ke separuh kiri/kanan, ulangi terus.
-
-    Kompleksitas: O(log n) - PENTING: kalau larik belum terurut,
-    hasilnya tidak bisa diandalkan (bisa salah/tidak ketemu padahal ada).
-    """
     lo = 0
     hi = len(larik_terurut) - 1
 
@@ -73,18 +35,6 @@ def binary_search(larik_terurut, kunci, nilai_target):
 
 
 def ambil_subset(struktur, filter_resto=None, filter_status=None, maks_baris=None):
-    """
-    Telusuri struktur M1 (Array atau LinkList) satu per satu lewat get(i),
-    salin pesanan yang cocok filter ke dalam list Python biasa (sebagai
-    "working copy" laporan, bukan mengubah struktur M1 aslinya).
-
-    filter_resto  : None = semua resto, atau nama resto persis (misal "kafe-teknik")
-    filter_status : None = semua status, atau "DONE" / "CANCEL" / "ANTRE"
-    maks_baris    : None = tidak dibatasi (HATI-HATI, insertion sort jadi
-                    sangat lambat kalau subset masih puluhan ribu baris),
-                    atau batasi jumlah baris yang diambil supaya tetap
-                    responsif untuk demo (disarankan beberapa ratus - 2000)
-    """
     hasil = []
     n = len(struktur)
     i = 0
@@ -107,17 +57,12 @@ def ambil_subset(struktur, filter_resto=None, filter_status=None, maks_baris=Non
 
 
 def buat_laporan(struktur, kunci, filter_resto=None, filter_status=None, maks_baris=1000):
-    """
-    Gabungan: ambil subset sesuai filter, lalu urutkan dengan insertion_sort
-    berdasarkan `kunci`. Mengembalikan list Pesanan yang sudah terurut.
-    """
     subset = ambil_subset(struktur, filter_resto, filter_status, maks_baris)
     insertion_sort(subset, kunci)
     return subset
 
 
 def cari_di_laporan(laporan_terurut, kunci, nilai_target):
-    """Bungkus binary_search supaya nama fungsinya jelas dipakai untuk apa."""
     return binary_search(laporan_terurut, kunci, nilai_target)
 
 

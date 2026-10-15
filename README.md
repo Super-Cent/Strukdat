@@ -60,7 +60,6 @@ Aturan bisnis untuk penyisipan pesanan berdasarkan jenis prioritas:
 | **10** | 0,03 ms | 0,03 ms | Performa identik pada data sangat kecil. |
 | **1.000** | 28,33 ms | 1,99 ms | Merge Sort ~14.2x lebih cepat. |
 | **5.000** | 806,72 ms | 10,69 ms | **Merge Sort ~75.4x lebih cepat** (Insertion Sort membengkak akibat O(N^2)). |
-| **200.000** | DITOLAK SISTEM | 317,80 ms | Batas aman Insertion Sort terlampaui; Merge Sort menyelesaikan seluruh dataset. |
 
 ---
 
